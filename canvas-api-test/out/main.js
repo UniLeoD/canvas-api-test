@@ -8,21 +8,24 @@ window.onload = function () {
     var context = canvas.getContext("2d");
     //   context.fillStyle = "#FF0000";
     // context.fillRect(0, 0, 150, 75);
-    var stage = new DisplayObjectContainer(0, 0);
+    var stage = new DisplayObjectContainer();
     setInterval(function () {
         context.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw(context);
     }, 30);
     context.fillStyle = "#FF0000";
-    var rect = new Rect(10, 10, 50, 50);
-    stage.addChild(rect);
+    //  var rect: Rect = new Rect(10, 10, 50, 50);
+    //stage.addChild(rect);
+    var textField1 = new TextField();
+    textField1.x = 10;
+    textField1.y = 10;
+    textField1.text = "Hello";
+    stage.addChild(textField1);
 };
 var DisplayObject = (function () {
-    function DisplayObject(x, y) {
+    function DisplayObject() {
         this.x = 0;
         this.y = 0;
-        this.x = x;
-        this.y = y;
     }
     DisplayObject.prototype.draw = function (context2D) {
     };
@@ -37,7 +40,7 @@ var DisplayObjectContainer = (function (_super) {
     DisplayObjectContainer.prototype.draw = function (context2D) {
         for (var _i = 0, _a = this.array; _i < _a.length; _i++) {
             var drawable = _a[_i];
-            drawable.draw(this.context2D);
+            drawable.draw(context2D);
         }
     };
     DisplayObjectContainer.prototype.addChild = function (child) {
@@ -45,16 +48,30 @@ var DisplayObjectContainer = (function (_super) {
     };
     return DisplayObjectContainer;
 }(DisplayObject));
-var Rect = (function (_super) {
-    __extends(Rect, _super);
-    function Rect(x, y, width, height) {
-        _super.call(this, x, y);
+var TextField = (function (_super) {
+    __extends(TextField, _super);
+    function TextField() {
+        _super.apply(this, arguments);
+        this.text = "";
+    }
+    TextField.prototype.draw = function (context) {
+        context.fillText(this.text, this.x, this.y, 100);
+    };
+    return TextField;
+}(DisplayObjectContainer));
+/*
+class Rect extends DisplayObject {
+    width: number;
+    height: number;
+
+    constructor(x: number, y: number, width: number, height: number) {
+        super(x, y);
         this.width = width;
         this.height = height;
     }
-    Rect.prototype.draw = function () {
+    draw() {
         this.context2D.fillRect(this.x, this.y, this.width, this.height);
-    };
-    return Rect;
-}(DisplayObject));
+    }
+}
+*/
 //# sourceMappingURL=main.js.map
