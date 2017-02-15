@@ -9,21 +9,39 @@ window.onload = () => {
     setInterval(() => {
         context.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw(context);
-    }, 30);
-   
+    }, 10);
+
     context.fillStyle = "#FF0000";
-  //  var rect: Rect = new Rect(10, 10, 50, 50);
+
+    var rect: Rect = new Rect();
+    rect.x = 10;
+    rect.y = 15;
+    rect.width = 50;
+    rect.height = 40;
+    stage.addChild(rect);
+
+    var bitmap = new Bitmap();
+    bitmap.bitmap.src = "egret.jpg";
+    bitmap.x = 10;
+    bitmap.y = 60;
+    stage.addChild(bitmap);
 
 
-    //stage.addChild(rect);
 
 
-var textField1 = new TextField();
-textField1.x=10;
-textField1.y=10;
-textField1.text="Hello";
+    var textField1 = new TextField();
+    textField1.x = 10;
+    textField1.y = 10;
+    textField1.text = "Hello";
+    stage.addChild(textField1);
 
-stage.addChild(textField1);
+    var TextField2 = new TextField();
+    TextField2.x = 10;
+    TextField2.y = 10;
+    TextField2.text = "             World";
+    stage.addChild(TextField2);
+
+    stage.draw(context);
 }
 
 
@@ -38,7 +56,7 @@ class DisplayObject implements Drawable {
     context2D: CanvasRenderingContext2D;
 
     constructor() {
-    
+
     }
     draw(context2D: CanvasRenderingContext2D) {
 
@@ -61,29 +79,32 @@ class DisplayObjectContainer extends DisplayObject implements Drawable {
 }
 
 
-class TextField extends DisplayObjectContainer{
+class TextField extends DisplayObject {
     text: string = "";
-    draw(context:CanvasRenderingContext2D){
-        
-       
-        context.fillText(this.text,this.x,this.y,100);
+    draw(context2D: CanvasRenderingContext2D) {
+        context2D.fillText(this.text, this.x, this.y, 100);
     }
 }
 
-/*
+
 class Rect extends DisplayObject {
     width: number;
     height: number;
 
-    constructor(x: number, y: number, width: number, height: number) {
-        super(x, y);
-        this.width = width;
-        this.height = height;
-    }
-    draw() {
-        this.context2D.fillRect(this.x, this.y, this.width, this.height);
+
+    draw(context2D: CanvasRenderingContext2D) {
+        context2D.fillRect(this.x, this.y, this.width, this.height);
     }
 }
-*/
+
+class Bitmap extends DisplayObject{
+    bitmap = new Image();
+    draw(context2D: CanvasRenderingContext2D) {
+        this.bitmap.onload = () => {
+            context2D.drawImage(this.bitmap, this.x, this.y);
+        }
+    }
+}
+
 
 

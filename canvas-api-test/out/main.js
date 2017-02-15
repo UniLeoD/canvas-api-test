@@ -12,15 +12,30 @@ window.onload = function () {
     setInterval(function () {
         context.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw(context);
-    }, 30);
+    }, 10);
     context.fillStyle = "#FF0000";
-    //  var rect: Rect = new Rect(10, 10, 50, 50);
-    //stage.addChild(rect);
+    var rect = new Rect();
+    rect.x = 10;
+    rect.y = 15;
+    rect.width = 50;
+    rect.height = 40;
+    stage.addChild(rect);
+    var bitmap = new Bitmap();
+    bitmap.bitmap.src = "egret.jpg";
+    bitmap.x = 10;
+    bitmap.y = 60;
+    stage.addChild(bitmap);
     var textField1 = new TextField();
     textField1.x = 10;
     textField1.y = 10;
     textField1.text = "Hello";
     stage.addChild(textField1);
+    var TextField2 = new TextField();
+    TextField2.x = 10;
+    TextField2.y = 10;
+    TextField2.text = "             World";
+    stage.addChild(TextField2);
+    stage.draw(context);
 };
 var DisplayObject = (function () {
     function DisplayObject() {
@@ -54,24 +69,33 @@ var TextField = (function (_super) {
         _super.apply(this, arguments);
         this.text = "";
     }
-    TextField.prototype.draw = function (context) {
-        context.fillText(this.text, this.x, this.y, 100);
+    TextField.prototype.draw = function (context2D) {
+        context2D.fillText(this.text, this.x, this.y, 100);
     };
     return TextField;
-}(DisplayObjectContainer));
-/*
-class Rect extends DisplayObject {
-    width: number;
-    height: number;
-
-    constructor(x: number, y: number, width: number, height: number) {
-        super(x, y);
-        this.width = width;
-        this.height = height;
+}(DisplayObject));
+var Rect = (function (_super) {
+    __extends(Rect, _super);
+    function Rect() {
+        _super.apply(this, arguments);
     }
-    draw() {
-        this.context2D.fillRect(this.x, this.y, this.width, this.height);
+    Rect.prototype.draw = function (context2D) {
+        context2D.fillRect(this.x, this.y, this.width, this.height);
+    };
+    return Rect;
+}(DisplayObject));
+var Bitmap = (function (_super) {
+    __extends(Bitmap, _super);
+    function Bitmap() {
+        _super.apply(this, arguments);
+        this.bitmap = new Image();
     }
-}
-*/
+    Bitmap.prototype.draw = function (context2D) {
+        var _this = this;
+        this.bitmap.onload = function () {
+            context2D.drawImage(_this.bitmap, _this.x, _this.y);
+        };
+    };
+    return Bitmap;
+}(DisplayObject));
 //# sourceMappingURL=main.js.map
