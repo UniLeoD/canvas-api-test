@@ -10,7 +10,10 @@ window.onload = function () {
     // context.fillRect(0, 0, 150, 75);
     var stage = new DisplayObjectContainer();
     setInterval(function () {
+        context.setTransform(1, 0, 0, 1, 0, 0);
         context.clearRect(0, 0, canvas.width, canvas.height);
+        textField1.x++;
+        TextField2.x++;
         stage.draw(context);
     }, 10);
     context.fillStyle = "#FF0000";
@@ -24,6 +27,7 @@ window.onload = function () {
     bitmap.image.src = "egret.jpg";
     bitmap.x = 10;
     bitmap.y = 100;
+    bitmap.rotation = -45;
     stage.addChild(bitmap);
     var textField1 = new TextField();
     textField1.x = 10;
@@ -35,14 +39,20 @@ window.onload = function () {
     TextField2.y = 10;
     TextField2.text = "                  World";
     stage.addChild(TextField2);
+    //stage.alpha = 0.5;
     stage.draw(context);
 };
 var DisplayObject = (function () {
     function DisplayObject() {
         this.x = 0;
         this.y = 0;
+        this.scaleX = 1;
+        this.scaleY = 1;
+        this.rotation = 0;
         this.alpha = 1;
         this.globalAlpha = 1;
+        this.globalMatrix = new math.Matrix;
+        this.localMatrix = new math.Matrix;
     }
     /*   context2D: CanvasRenderingContext2D;
    
@@ -54,12 +64,16 @@ var DisplayObject = (function () {
        }
        */
     DisplayObject.prototype.draw = function (context2D) {
+        this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
         if (this.parent) {
             this.globalAlpha = this.parent.globalAlpha * this.alpha;
+            this.globalMatrix = math.matrixAppendMatrix(this.localMatrix, this.parent.globalMatrix);
         }
         else {
             this.globalAlpha = this.alpha;
+            this.globalMatrix = this.localMatrix;
         }
+        context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
         context2D.globalAlpha = this.globalAlpha;
         this.render(context2D);
     };
