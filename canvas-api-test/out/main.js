@@ -21,9 +21,9 @@ window.onload = function () {
     rect.height = 40;
     stage.addChild(rect);
     var bitmap = new Bitmap();
-    bitmap.bitmap.src = "egret.jpg";
+    bitmap.image.src = "egret.jpg";
     bitmap.x = 10;
-    bitmap.y = 60;
+    bitmap.y = 100;
     stage.addChild(bitmap);
     var textField1 = new TextField();
     textField1.x = 10;
@@ -33,7 +33,7 @@ window.onload = function () {
     var TextField2 = new TextField();
     TextField2.x = 10;
     TextField2.y = 10;
-    TextField2.text = "             World";
+    TextField2.text = "                  World";
     stage.addChild(TextField2);
     stage.draw(context);
 };
@@ -41,8 +41,29 @@ var DisplayObject = (function () {
     function DisplayObject() {
         this.x = 0;
         this.y = 0;
+        this.alpha = 1;
+        this.globalAlpha = 1;
     }
+    /*   context2D: CanvasRenderingContext2D;
+   
+       constructor() {
+   
+       }
+       draw(context2D: CanvasRenderingContext2D) {
+   
+       }
+       */
     DisplayObject.prototype.draw = function (context2D) {
+        if (this.parent) {
+            this.globalAlpha = this.parent.globalAlpha * this.alpha;
+        }
+        else {
+            this.globalAlpha = this.alpha;
+        }
+        context2D.globalAlpha = this.globalAlpha;
+        this.render(context2D);
+    };
+    DisplayObject.prototype.render = function (context2D) {
     };
     return DisplayObject;
 }());
@@ -52,7 +73,7 @@ var DisplayObjectContainer = (function (_super) {
         _super.apply(this, arguments);
         this.array = [];
     }
-    DisplayObjectContainer.prototype.draw = function (context2D) {
+    DisplayObjectContainer.prototype.render = function (context2D) {
         for (var _i = 0, _a = this.array; _i < _a.length; _i++) {
             var drawable = _a[_i];
             drawable.draw(context2D);
@@ -60,6 +81,7 @@ var DisplayObjectContainer = (function (_super) {
     };
     DisplayObjectContainer.prototype.addChild = function (child) {
         this.array.push(child);
+        child.parent = this;
     };
     return DisplayObjectContainer;
 }(DisplayObject));
@@ -69,8 +91,8 @@ var TextField = (function (_super) {
         _super.apply(this, arguments);
         this.text = "";
     }
-    TextField.prototype.draw = function (context2D) {
-        context2D.fillText(this.text, this.x, this.y, 100);
+    TextField.prototype.render = function (context2D) {
+        context2D.fillText(this.text, this.x, this.y);
     };
     return TextField;
 }(DisplayObject));
@@ -79,7 +101,7 @@ var Rect = (function (_super) {
     function Rect() {
         _super.apply(this, arguments);
     }
-    Rect.prototype.draw = function (context2D) {
+    Rect.prototype.render = function (context2D) {
         context2D.fillRect(this.x, this.y, this.width, this.height);
     };
     return Rect;
@@ -88,13 +110,10 @@ var Bitmap = (function (_super) {
     __extends(Bitmap, _super);
     function Bitmap() {
         _super.apply(this, arguments);
-        this.bitmap = new Image();
+        this.image = document.createElement("img");
     }
-    Bitmap.prototype.draw = function (context2D) {
-        var _this = this;
-        this.bitmap.onload = function () {
-            context2D.drawImage(_this.bitmap, _this.x, _this.y);
-        };
+    Bitmap.prototype.render = function (context2D) {
+        context2D.drawImage(this.image, this.x, this.y);
     };
     return Bitmap;
 }(DisplayObject));

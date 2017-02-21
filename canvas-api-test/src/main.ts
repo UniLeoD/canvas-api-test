@@ -4,8 +4,8 @@ window.onload = () => {
     var context = canvas.getContext("2d");
     //   context.fillStyle = "#FF0000";
     // context.fillRect(0, 0, 150, 75);
-
     var stage: DisplayObjectContainer = new DisplayObjectContainer();
+
     setInterval(() => {
         context.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw(context);
@@ -21,9 +21,9 @@ window.onload = () => {
     stage.addChild(rect);
 
     var bitmap = new Bitmap();
-    bitmap.bitmap.src = "egret.jpg";
+    bitmap.image.src = "egret.jpg";
     bitmap.x = 10;
-    bitmap.y = 60;
+    bitmap.y = 100;
     stage.addChild(bitmap);
 
 
@@ -38,7 +38,7 @@ window.onload = () => {
     var TextField2 = new TextField();
     TextField2.x = 10;
     TextField2.y = 10;
-    TextField2.text = "             World";
+    TextField2.text = "                  World";
     stage.addChild(TextField2);
 
     stage.draw(context);
@@ -53,12 +53,32 @@ interface Drawable {
 
 class DisplayObject implements Drawable {
     x: number = 0; y: number = 0;
-    context2D: CanvasRenderingContext2D;
+
+    alpha: number = 1;
+    globalAlpha:number=1;
+
+    parent:DisplayObjectContainer;
+
+ /*   context2D: CanvasRenderingContext2D;
 
     constructor() {
 
     }
     draw(context2D: CanvasRenderingContext2D) {
+
+    }
+    */
+    draw(context2D:CanvasRenderingContext2D){
+        if(this.parent){
+            this.globalAlpha=this.parent.globalAlpha*this.alpha;
+        }else{
+            this.globalAlpha=this.alpha;
+        }
+        context2D.globalAlpha=this.globalAlpha;
+        this.render(context2D);
+    }
+
+    render(context2D:CanvasRenderingContext2D){
 
     }
 }
@@ -68,21 +88,22 @@ class DisplayObject implements Drawable {
 class DisplayObjectContainer extends DisplayObject implements Drawable {
     array: Drawable[] = [];
 
-    draw(context2D: CanvasRenderingContext2D) {
-        for (let drawable of this.array) {
-            drawable.draw(context2D);
-        }
-    }
-    addChild(child: Drawable) {
+   render(context2D:CanvasRenderingContext2D){
+       for(let drawable of this.array){
+           drawable.draw(context2D);
+       }
+   }
+    addChild(child: DisplayObject) {
         this.array.push(child);
+        child.parent=this;
     }
 }
 
 
 class TextField extends DisplayObject {
     text: string = "";
-    draw(context2D: CanvasRenderingContext2D) {
-        context2D.fillText(this.text, this.x, this.y, 100);
+    render(context2D: CanvasRenderingContext2D) {
+        context2D.fillText(this.text, this.x, this.y);
     }
 }
 
@@ -92,17 +113,15 @@ class Rect extends DisplayObject {
     height: number;
 
 
-    draw(context2D: CanvasRenderingContext2D) {
+    render(context2D: CanvasRenderingContext2D) {
         context2D.fillRect(this.x, this.y, this.width, this.height);
     }
 }
 
-class Bitmap extends DisplayObject{
-    bitmap = new Image();
-    draw(context2D: CanvasRenderingContext2D) {
-        this.bitmap.onload = () => {
-            context2D.drawImage(this.bitmap, this.x, this.y);
-        }
+class Bitmap extends DisplayObject {
+    image = document.createElement("img");
+    render(context2D:CanvasRenderingContext2D){
+        context2D.drawImage(this.image,this.x,this.y);
     }
 }
 
