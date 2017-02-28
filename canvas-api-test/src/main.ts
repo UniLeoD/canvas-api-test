@@ -89,17 +89,9 @@ class DisplayObject implements Drawable {
 
     parent: DisplayObjectContainer;
 
+    isMouseDown = false;
+    touchListeners: TouchEventListener[] = [];
 
-
-    /*   context2D: CanvasRenderingContext2D;
-   
-       constructor() {
-   
-       }
-       draw(context2D: CanvasRenderingContext2D) {
-   
-       }
-       */
     draw(context2D: CanvasRenderingContext2D) {
         this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
         if (this.parent) {
@@ -109,12 +101,34 @@ class DisplayObject implements Drawable {
             this.globalAlpha = this.alpha;
             this.globalMatrix = this.localMatrix;
         }
+        //aaaa
         context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
         context2D.globalAlpha = this.globalAlpha;
         this.render(context2D);
     }
 
     render(context2D: CanvasRenderingContext2D) {
+
+    }
+}
+
+function addEventListener(type: TouchType, touchListener: Function, capture?: boolean, priority?: number) {
+    var event = new TouchEventListener(type, touchListener, capture, priority);
+    this.touchListeners.push(event);
+}
+
+function dispatchEvent(e: any) {
+    console.log(e.type);
+    if (e.type == "mousedown") {
+        this.isMouseDown = true;
+    } else if (e.type == "mouseup" && this.isMouseDown == true) {//other types unfinish
+        for (let i = 0; i < this.touchListeners.length; i++) {
+            if (this.touchListeners[i].type == TouchType.CLICK) {
+                this.touchListeners[i].func();
+            }
+        }
+        this.isMouseDown = false;
+    } else if (e.type == "mousemove") {
 
     }
 }
@@ -146,9 +160,9 @@ class DisplayObjectContainer extends DisplayObject implements Drawable {
                 return hitTestResult;
             }
         }
-         return null;
+        return null;
     }
-   
+
 }
 
 
@@ -179,3 +193,37 @@ class Bitmap extends DisplayObject {
 
 
 
+
+
+enum TouchType {
+    MOUSEDOWN,
+    MOUSEUP,
+    CLICK,
+    MOUSEMOVE
+}
+
+class TouchEventListener {
+    type: TouchType;
+    func: Function;
+    capture = false;
+    priority = 0;
+
+    constructor(type: TouchType, func: Function, capture?: boolean, priority?: number) {
+        this.type = type;
+        this.func = func;
+        this.capture = capture || false;
+        this.priority = priority || 0;
+    }
+}
+
+class TouchEvents {
+    x: number;
+    y: number;
+    type: TouchType;
+
+    constructor(x: number, y: number, type: TouchType) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+    }
+}
