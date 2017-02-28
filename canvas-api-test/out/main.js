@@ -41,6 +41,40 @@ window.onload = function () {
     stage.addChild(TextField2);
     //stage.alpha = 0.5;
     stage.draw(context);
+    window.onmousedown = function (e) {
+        var x = e.offsetX;
+        var y = e.offsetY;
+        var type = "mousedown";
+        var target = stage.hitTest(x, y);
+        var result = target;
+        if (result) {
+            while (result.parent) {
+                var currentTarget = result.parent;
+                var e_1 = { type: type, target: target, currentTarget: currentTarget };
+                result = result.parent;
+            }
+        }
+        alert(1);
+    };
+    window.onmouseup = function (e) {
+        var x = e.offsetX - 3;
+        var y = e.offsetY - 3;
+        var result = stage.hitTest(x, y);
+        var target = result;
+        console.log(result);
+        if (result) {
+            do {
+                result.dispatchTouchEvent(e);
+            } while (result.parent);
+            {
+                var type = "onmouseup";
+                var currentTarget = result.parent;
+                var e_2 = { type: type, target: target, currentTarget: currentTarget };
+                result.dispatchTouchEvent(e_2);
+                result = result.parent;
+            }
+        }
+    };
 };
 var DisplayObject = (function () {
     function DisplayObject() {
@@ -53,16 +87,9 @@ var DisplayObject = (function () {
         this.globalAlpha = 1;
         this.globalMatrix = new math.Matrix;
         this.localMatrix = new math.Matrix;
+        this.isMouseDown = false;
+        this.touchListeners = [];
     }
-    /*   context2D: CanvasRenderingContext2D;
-   
-       constructor() {
-   
-       }
-       draw(context2D: CanvasRenderingContext2D) {
-   
-       }
-       */
     DisplayObject.prototype.draw = function (context2D) {
         this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
         if (this.parent) {
@@ -73,6 +100,7 @@ var DisplayObject = (function () {
             this.globalAlpha = this.alpha;
             this.globalMatrix = this.localMatrix;
         }
+        //aaaa
         context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
         context2D.globalAlpha = this.globalAlpha;
         this.render(context2D);
@@ -81,6 +109,26 @@ var DisplayObject = (function () {
     };
     return DisplayObject;
 }());
+function addListener(type, touchListener, capture, priority) {
+    var event = new TouchEventListener(type, touchListener, capture, priority);
+    this.touchListeners.push(event);
+}
+function dispatchTouchEvent(e) {
+    console.log(e.type);
+    if (e.type == "mousedown") {
+        this.isMouseDown = true;
+    }
+    else if (e.type == "mouseup" && this.isMouseDown == true) {
+        for (var i = 0; i < this.touchListeners.length; i++) {
+            if (this.touchListeners[i].type == TouchType.CLICK) {
+                this.touchListeners[i].func();
+            }
+        }
+        this.isMouseDown = false;
+    }
+    else if (e.type == "mousemove") {
+    }
+}
 var DisplayObjectContainer = (function (_super) {
     __extends(DisplayObjectContainer, _super);
     function DisplayObjectContainer() {
@@ -97,6 +145,19 @@ var DisplayObjectContainer = (function (_super) {
         this.array.push(child);
         child.parent = this;
     };
+    DisplayObjectContainer.prototype.hitTest = function (x, y) {
+        for (var i = this.array.length - 1; i >= 0; i--) {
+            var child = this.array[i];
+            var point = new math.Point(x, y);
+            var invertChildLocalMatrix = math.invertMatrix(child.localMatrix);
+            var pointBaseOnChild = math.pointAppendMatrix(point, invertChildLocalMatrix);
+            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
+            if (hitTestResult) {
+                return hitTestResult;
+            }
+        }
+        return null;
+    };
     return DisplayObjectContainer;
 }(DisplayObject));
 var TextField = (function (_super) {
@@ -108,6 +169,7 @@ var TextField = (function (_super) {
     TextField.prototype.render = function (context2D) {
         context2D.fillText(this.text, this.x, this.y);
     };
+    TextField.prototype.hitTest = function (x, y) { };
     return TextField;
 }(DisplayObject));
 var Rect = (function (_super) {
@@ -118,6 +180,7 @@ var Rect = (function (_super) {
     Rect.prototype.render = function (context2D) {
         context2D.fillRect(this.x, this.y, this.width, this.height);
     };
+    Rect.prototype.hitTest = function (x, y) { };
     return Rect;
 }(DisplayObject));
 var Bitmap = (function (_super) {
@@ -129,6 +192,43 @@ var Bitmap = (function (_super) {
     Bitmap.prototype.render = function (context2D) {
         context2D.drawImage(this.image, this.x, this.y);
     };
+    Bitmap.prototype.hitTest = function (x, y) {
+        console.log("bitmap");
+        var rect = new math.Rectangle();
+        rect.x = rect.y = 0;
+        rect.width = this.image.width;
+        rect.height = this.image.height;
+        if (rect.isPointInReactangle(new math.Point(x, y))) {
+            alert("touch");
+            return this;
+        }
+    };
     return Bitmap;
 }(DisplayObject));
+var TouchType;
+(function (TouchType) {
+    TouchType[TouchType["MOUSEDOWN"] = 0] = "MOUSEDOWN";
+    TouchType[TouchType["MOUSEUP"] = 1] = "MOUSEUP";
+    TouchType[TouchType["CLICK"] = 2] = "CLICK";
+    TouchType[TouchType["MOUSEMOVE"] = 3] = "MOUSEMOVE";
+})(TouchType || (TouchType = {}));
+var TouchEventListener = (function () {
+    function TouchEventListener(type, func, capture, priority) {
+        this.capture = false;
+        this.priority = 0;
+        this.type = type;
+        this.func = func;
+        this.capture = capture || false;
+        this.priority = priority || 0;
+    }
+    return TouchEventListener;
+}());
+var TouchEvents = (function () {
+    function TouchEvents(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+    }
+    return TouchEvents;
+}());
 //# sourceMappingURL=main.js.map

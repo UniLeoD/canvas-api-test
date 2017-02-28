@@ -62,9 +62,32 @@ window.onload = () => {
                 result = result.parent;
             }
         }
-        alert()
+        alert(1);
+    }
+
+
+    window.onmouseup = (e) => {
+        let x = e.offsetX - 3;
+        let y = e.offsetY - 3;
+        let result = stage.hitTest(x, y);
+        let target = result;
+        console.log(result)
+        if (result) {
+            do {
+                result.dispatchTouchEvent(e);
+            }
+            while (result.parent) {
+                let type = "onmouseup";
+                let currentTarget = result.parent;
+                let e = { type, target, currentTarget };
+                result.dispatchTouchEvent(e);
+                result = result.parent;
+            }
+        }
     }
 }
+
+
 
 
 
@@ -74,7 +97,7 @@ interface Drawable {
 
 
 
-class DisplayObject implements Drawable {
+abstract class DisplayObject implements Drawable {
     x: number = 0;
     y: number = 0;
     scaleX: number = 1;
@@ -91,6 +114,8 @@ class DisplayObject implements Drawable {
 
     isMouseDown = false;
     touchListeners: TouchEventListener[] = [];
+
+    abstract hitTest(x: number, y: number)
 
     draw(context2D: CanvasRenderingContext2D) {
         this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
@@ -112,12 +137,12 @@ class DisplayObject implements Drawable {
     }
 }
 
-function addEventListener(type: TouchType, touchListener: Function, capture?: boolean, priority?: number) {
+function addListener(type: TouchType, touchListener: Function, capture?: boolean, priority?: number) {
     var event = new TouchEventListener(type, touchListener, capture, priority);
     this.touchListeners.push(event);
 }
 
-function dispatchEvent(e: any) {
+function dispatchTouchEvent(e: any) {
     console.log(e.type);
     if (e.type == "mousedown") {
         this.isMouseDown = true;
@@ -136,7 +161,7 @@ function dispatchEvent(e: any) {
 
 
 class DisplayObjectContainer extends DisplayObject implements Drawable {
-    array: Drawable[] = [];
+    array: DisplayObject[] = [];
 
     render(context2D: CanvasRenderingContext2D) {
         for (let drawable of this.array) {
@@ -171,6 +196,7 @@ class TextField extends DisplayObject {
     render(context2D: CanvasRenderingContext2D) {
         context2D.fillText(this.text, this.x, this.y);
     }
+     hitTest(x: number, y: number){}
 }
 
 
@@ -182,12 +208,26 @@ class Rect extends DisplayObject {
     render(context2D: CanvasRenderingContext2D) {
         context2D.fillRect(this.x, this.y, this.width, this.height);
     }
+
+     hitTest(x: number, y: number){}
 }
 
 class Bitmap extends DisplayObject {
     image = document.createElement("img");
     render(context2D: CanvasRenderingContext2D) {
         context2D.drawImage(this.image, this.x, this.y);
+    }
+
+     hitTest(x: number, y: number) {
+        console.log("bitmap");
+        let rect = new math.Rectangle();
+        rect.x = rect.y = 0;
+        rect.width = this.image.width;
+        rect.height = this.image.height;
+        if (rect.isPointInReactangle(new math.Point(x, y))) {
+            alert("touch");
+            return this;
+        }
     }
 }
 
@@ -227,3 +267,5 @@ class TouchEvents {
         this.type = type;
     }
 }
+
+

@@ -10,6 +10,20 @@ module math {
         }
     }
 
+    export class Rectangle{
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        isPointInReactangle(point: Point){
+            if(point.x >= this.x && point.x <= (this.x + this.width)
+            && point.y >= this.y && point.y <= (this.y + this.height)){
+                return true;
+            }
+            return false;
+        }
+    }
+
     export function pointAppendMatrix(point: Point, m: Matrix): Point {
         var x = m.a * point.x + m.c * point.y + m.tx;
         var y = m.b * point.x + m.d * point.y + m.ty;
