@@ -7,7 +7,7 @@ window.onload = () => {
     var stage: DisplayObjectContainer = new DisplayObjectContainer();
 
     setInterval(() => {
-        context.setTransform(1,0,0,1,0,0);
+        context.setTransform(1, 0, 0, 1, 0, 0);
         context.clearRect(0, 0, canvas.width, canvas.height);
         textField1.x++;
         TextField2.x++;
@@ -47,7 +47,25 @@ window.onload = () => {
 
     //stage.alpha = 0.5;
     stage.draw(context);
+
+
+    window.onmousedown = (e) => {
+        let x = e.offsetX;
+        let y = e.offsetY;
+        let type = "mousedown";
+        let target = stage.hitTest(x, y);
+        let result = target;
+        if (result) {
+            while (result.parent) {
+                let currentTarget = result.parent;
+                let e = { type, target, currentTarget };
+                result = result.parent;
+            }
+        }
+        alert()
+    }
 }
+
 
 
 interface Drawable {
@@ -86,7 +104,7 @@ class DisplayObject implements Drawable {
         this.localMatrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
         if (this.parent) {
             this.globalAlpha = this.parent.globalAlpha * this.alpha;
-             this.globalMatrix = math.matrixAppendMatrix(this.localMatrix, this.parent.globalMatrix);
+            this.globalMatrix = math.matrixAppendMatrix(this.localMatrix, this.parent.globalMatrix);
         } else {
             this.globalAlpha = this.alpha;
             this.globalMatrix = this.localMatrix;
@@ -115,6 +133,22 @@ class DisplayObjectContainer extends DisplayObject implements Drawable {
         this.array.push(child);
         child.parent = this;
     }
+
+
+    hitTest(x, y) {
+        for (let i = this.array.length - 1; i >= 0; i--) {
+            let child = this.array[i];
+            let point = new math.Point(x, y);
+            let invertChildLocalMatrix = math.invertMatrix(child.localMatrix);
+            let pointBaseOnChild = math.pointAppendMatrix(point, invertChildLocalMatrix);
+            let hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
+            if (hitTestResult) {
+                return hitTestResult;
+            }
+        }
+         return null;
+    }
+   
 }
 
 
